@@ -1,0 +1,9 @@
+{% extends 'appointments/base.html' %}
+{% block title %}Admin Paneli{% endblock %}
+{% block content %}
+<div class="container text-center">
+    <h2 class="mb-4">🧑‍💼 Admin Dashboard</h2>
+    <a href="{% url 'admin_create_availability' %}" class="btn btn-warning">Uygunluk Oluştur</a>
+    <a href="{% url 'availability_list' %}" class="btn btn-outline-info">Tüm Randevular</a>
+</div>
+{% endblock %}

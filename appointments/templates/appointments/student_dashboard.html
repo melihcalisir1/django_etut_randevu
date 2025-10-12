@@ -1,0 +1,9 @@
+{% extends 'appointments/base.html' %}
+{% block title %}Öğrenci Paneli{% endblock %}
+{% block content %}
+<div class="container text-center">
+    <h2 class="mb-4">🎓 Öğrenci Dashboard</h2>
+    <a href="{% url 'availability_list' %}" class="btn btn-primary">Randevu Al</a>
+    <a href="{% url 'my_appointments' %}" class="btn btn-outline-secondary">Randevularım</a>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'appointments/base.html' %}
+
+{% block title %}Randevu Al{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">🎓 Randevu Al</h2>
+
+<div class="card p-4">
+    <h5>{{ availability.date }} - {{ availability.start_time }} / {{ availability.end_time }}</h5>
+    <form method="POST" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Branş Seç:</label>
+            <div class="form-check">
+                {% for branch in branches %}
+                <input type="checkbox" class="form-check-input" name="branches" value="{{ branch.id }}" id="branch{{ branch.id }}">
+                <label for="branch{{ branch.id }}" class="form-check-label">{{ branch.name }}</label><br>
+                {% endfor %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Kaydet</button>
+    </form>
+    <a href="{% url 'availability_list' %}" class="btn btn-outline-secondary w-100 mt-2">← Geri dön</a>
+</div>
+{% endblock %}

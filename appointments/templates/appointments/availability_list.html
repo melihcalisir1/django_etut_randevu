@@ -1,0 +1,26 @@
+{% extends 'appointments/base.html' %}
+
+{% block title %}Uygunluk Listesi{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📅 Uygunluk Listesi</h2>
+
+{% if availabilities %}
+<div class="row">
+    {% for item in availabilities %}
+    <div class="col-md-4 mb-4">
+        <div class="card p-3">
+            <h5 class="card-title">{{ item.date }} | {{ item.start_time }} - {{ item.end_time }}</h5>
+            <p class="card-text">
+                <strong>Kontenjan:</strong> {{ item.quota }}<br>
+                <strong>Not:</strong> {{ item.note|default:"-" }}
+            </p>
+            <a href="{% url 'book_appointment' item.id %}" class="btn btn-primary w-100">Randevu Al</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning">Henüz uygunluk eklenmemiş.</div>
+{% endif %}
+{% endblock %}

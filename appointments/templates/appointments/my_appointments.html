@@ -1,0 +1,37 @@
+{% extends 'appointments/base.html' %}
+
+{% block title %}Randevularım{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📘 Randevularım</h2>
+
+{% if appointments %}
+<div class="row">
+    {% for appt in appointments %}
+    <div class="col-md-6 mb-4">
+        <div class="card p-3">
+            <h5>{{ appt.availability.date }} | {{ appt.availability.start_time }} - {{ appt.availability.end_time }}</h5>
+            <p><strong>Durum:</strong>
+                {% if appt.status == 'approved' %}
+                <span class="badge bg-success">Onaylandı</span>
+                {% elif appt.status == 'cancelled' %}
+                <span class="badge bg-danger">İptal Edildi</span>
+                {% else %}
+                <span class="badge bg-secondary">Gelmedi</span>
+                {% endif %}
+            </p>
+            <p><strong>Branşlar:</strong>
+                {% for b in appt.branches.all %}
+                <span class="badge bg-primary">{{ b.name }}</span>
+                {% empty %}
+                Yok
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">Henüz hiç randevunuz yok.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'appointments/base.html' %}
+{% block title %}Uygunluk Oluştur{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">📅 Uygunluk Oluştur (Admin)</h2>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Tekil Oluşturma -->
+        <div class="col-md-6">
+            <div class="card shadow p-4 mb-4">
+                <h5>🕐 Tekil Uygunluk Ekle</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="single">
+
+                    <div class="mb-3">
+                        <label class="form-label">Tarih</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Başlangıç Saati</label>
+                        <input type="time" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bitiş Saati</label>
+                        <input type="time" name="end_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kontenjan</label>
+                        <input type="number" name="quota" class="form-control" value="20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Not</label>
+                        <textarea name="note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Ekle</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toplu Oluşturma -->
+        <div class="col-md-6">
+            <div class="card shadow p-4 mb-4">
+                <h5>⚙️ Otomatik 50 Günlük Uygunluk Oluştur</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="bulk">
+
+                    <div class="mb-3">
+                        <label class="form-label">Başlangıç Saati</label>
+                        <input type="time" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bitiş Saati</label>
+                        <input type="time" name="end_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kontenjan</label>
+                        <input type="number" name="quota" class="form-control" value="20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Not</label>
+                        <textarea name="note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">50 Günlük Uygunluk Ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
