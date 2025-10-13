@@ -1,9 +1,88 @@
-{% extends 'appointments/base.html' %}
-{% block title %}Admin Paneli{% endblock %}
-{% block content %}
-<div class="container text-center">
-    <h2 class="mb-4">🧑‍💼 Admin Dashboard</h2>
-    <a href="{% url 'admin_create_availability' %}" class="btn btn-warning">Uygunluk Oluştur</a>
-    <a href="{% url 'availability_list' %}" class="btn btn-outline-info">Tüm Randevular</a>
+{% extends 'appointments/base_admin.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block admin_content %}
+
+<div class="container-fluid">
+    <h3 class="mb-4">👨‍💼 Admin Dashboard</h3>
+
+    <!-- Özet Kartlar -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded">
+                <div class="card-body text-center">
+                    <h4 class="text-primary">{{ total_availabilities }}</h4>
+                    <p class="text-muted mb-0">Toplam Uygunluk</p>
+                    <i class="bi bi-calendar2-check display-6 text-primary"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded">
+                <div class="card-body text-center">
+                    <h4 class="text-success">{{ total_appointments }}</h4>
+                    <p class="text-muted mb-0">Toplam Randevu</p>
+                    <i class="bi bi-people-fill display-6 text-success"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded">
+                <div class="card-body text-center">
+                    <h4 class="text-warning">{{ total_students }}</h4>
+                    <p class="text-muted mb-0">Kayıtlı Öğrenci</p>
+                    <i class="bi bi-person-badge-fill display-6 text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son Randevular Tablosu -->
+    <div class="card mt-5 shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">📅 Son Randevular</h5>
+            <a href="{% url 'all_appointments' %}" class="btn btn-sm btn-outline-light">Tümünü Gör</a>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Öğrenci</th>
+                    <th>Tarih</th>
+                    <th>Saat</th>
+                    <th>Durum</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for appointment in recent_appointments %}
+                <tr>
+                    <td>{{ appointment.id }}</td>
+                    <td>{{ appointment.student.username }}</td>
+                    <td>{{ appointment.availability.date }}</td>
+                    <td>{{ appointment.availability.start_time }} - {{ appointment.availability.end_time }}</td>
+                    <td>
+                        {% if appointment.status == 'approved' %}
+                        <span class="badge bg-success">Onaylı</span>
+                        {% elif appointment.status == 'cancelled' %}
+                        <span class="badge bg-danger">İptal</span>
+                        {% elif appointment.status == 'no_show' %}
+                        <span class="badge bg-warning text-dark">Gelmedi</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Bekliyor</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Henüz randevu yok.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
 {% endblock %}

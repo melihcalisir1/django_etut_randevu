@@ -1,0 +1,46 @@
+{% extends 'appointments/base.html' %}
+{% block content %}
+<div class="d-flex m-0 p-0" style="width: 100%; min-height: 100vh; overflow-x: hidden;">
+
+    <!-- SIDEBAR -->
+    <div class="bg-dark text-white p-3"
+         style="width: 250px; min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <h5 class="mb-4">⚙️ Yönetim</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white {% if request.path == '/appointments/admin/dashboard/' %}fw-bold text-warning{% endif %}"
+                   href="{% url 'admin_dashboard' %}">
+                    🏠 Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white {% if request.path == '/appointments/admin/availability/create/' %}fw-bold text-warning{% endif %}"
+                   href="{% url 'create_availability' %}">
+                    📅 Uygunluk Oluştur
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white {% if request.path == '/appointments/admin/availability/list/' %}fw-bold text-warning{% endif %}"
+                   href="{% url 'availability_list_admin' %}">
+                    🗓️ Uygunluk Listesi
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white {% if request.path == '/appointments/admin/appointments/' %}fw-bold text-warning{% endif %}"
+                   href="{% url 'all_appointments' %}">
+                    📋 Tüm Randevular
+                </a>
+            </li>
+            <li class="nav-item mt-3 border-top pt-2">
+                <a class="nav-link text-danger" href="{% url 'logout' %}">🚪 Çıkış</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 p-4"
+         style="margin-left: 250px; background-color: #f8f9fa; min-height: 100vh;">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
