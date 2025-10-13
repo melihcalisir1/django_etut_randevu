@@ -35,8 +35,14 @@ def admin_dashboard(request):
 # Uygunluk listesini göster
 def availability_list(request):
     availabilities = Availability.objects.all().order_by('date', 'start_time')
+    
+    # Sayfalama
+    paginator = Paginator(availabilities, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, 'appointments/availability_list.html', {
-        'availabilities': availabilities
+        'page_obj': page_obj
     })
 
 # Randevu oluşturma
@@ -53,10 +59,21 @@ def book_appointment(request, availability_id):
         ).exists()
 
         if existing:
-                messages.warning(request, "Bu saat için zaten bir randevunuz var.")
-                return redirect('availability_list')
+            return render(request, 'appointments/book_appointment.html', {
+                'availability': availability,
+                'branches': branches,
+                'error_message': 'Bu saat için zaten bir randevunuz var!'
+            })
 
         selected_branches = request.POST.getlist('branches')
+        
+        if not selected_branches:
+            return render(request, 'appointments/book_appointment.html', {
+                'availability': availability,
+                'branches': branches,
+                'error_message': 'Lütfen en az bir branş seçin!'
+            })
+        
         appointment = Appointment.objects.create(
             availability=availability,
             student=student
@@ -64,8 +81,11 @@ def book_appointment(request, availability_id):
         appointment.branches.set(selected_branches)
         appointment.save()
 
-        messages.success(request, "Randevunuz başarıyla oluşturuldu 🎉")
-        return redirect('availability_list')
+        return render(request, 'appointments/book_appointment.html', {
+            'availability': availability,
+            'branches': branches,
+            'success_message': 'Randevunuz başarıyla oluşturuldu! 🎉'
+        })
 
     return render(request, 'appointments/book_appointment.html', {
         'availability': availability,

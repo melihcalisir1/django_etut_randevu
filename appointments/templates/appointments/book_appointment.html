@@ -1,13 +1,13 @@
-{% extends 'appointments/base.html' %}
+{% extends 'appointments/base_student.html' %}
 
 {% block title %}Randevu Al{% endblock %}
 
-{% block content %}
+{% block student_content %}
 <h2 class="mb-3">🎓 Randevu Al</h2>
 
 <div class="card p-4">
     <h5>{{ availability.date }} - {{ availability.start_time }} / {{ availability.end_time }}</h5>
-    <form method="POST" class="mt-3">
+    <form method="POST" class="mt-3" id="appointmentForm">
         {% csrf_token %}
         <div class="mb-3">
             <label class="form-label">Branş Seç:</label>
@@ -18,8 +18,67 @@
                 {% endfor %}
             </div>
         </div>
-        <button type="submit" class="btn btn-success w-100">Kaydet</button>
+        <button type="submit" class="btn btn-success w-100" id="submitBtn">
+            <span id="btnText">📅 Randevu Al</span>
+            <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+        </button>
     </form>
     <a href="{% url 'availability_list' %}" class="btn btn-outline-secondary w-100 mt-2">← Geri dön</a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hata mesajı varsa göster
+    {% if error_message %}
+    Swal.fire({
+        title: '❌ Hata!',
+        text: '{{ error_message }}',
+        icon: 'error',
+        confirmButtonText: 'Tamam',
+        confirmButtonColor: '#d33'
+    });
+    {% endif %}
+
+    // Başarı mesajı varsa göster
+    {% if success_message %}
+    Swal.fire({
+        title: '✅ Başarılı!',
+        text: '{{ success_message }}',
+        icon: 'success',
+        confirmButtonText: 'Tamam',
+        confirmButtonColor: '#28a745'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'availability_list' %}";
+        }
+    });
+    {% endif %}
+
+    // Form gönderimi
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        
+        // Branş seçimi kontrolü
+        const selectedBranches = document.querySelectorAll('input[name="branches"]:checked');
+        if (selectedBranches.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                title: '⚠️ Uyarı!',
+                text: 'Lütfen en az bir branş seçin!',
+                icon: 'warning',
+                confirmButtonText: 'Tamam',
+                confirmButtonColor: '#ffc107'
+            });
+            return;
+        }
+
+        // Loading durumu
+        submitBtn.disabled = true;
+        btnText.textContent = 'İşleniyor...';
+        btnSpinner.classList.remove('d-none');
+    });
+});
+</script>
 {% endblock %}

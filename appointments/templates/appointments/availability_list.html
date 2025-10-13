@@ -1,26 +1,122 @@
-{% extends 'appointments/base.html' %}
+{% extends 'appointments/base_student.html' %}
 
 {% block title %}Uygunluk Listesi{% endblock %}
 
-{% block content %}
+{% block student_content %}
 <h2 class="mb-4">📅 Uygunluk Listesi</h2>
 
-{% if availabilities %}
-<div class="row">
-    {% for item in availabilities %}
-    <div class="col-md-4 mb-4">
-        <div class="card p-3">
-            <h5 class="card-title">{{ item.date }} | {{ item.start_time }} - {{ item.end_time }}</h5>
-            <p class="card-text">
-                <strong>Kontenjan:</strong> {{ item.quota }}<br>
-                <strong>Not:</strong> {{ item.note|default:"-" }}
-            </p>
-            <a href="{% url 'book_appointment' item.id %}" class="btn btn-primary w-100">Randevu Al</a>
+{% if page_obj %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Başlangıç Saati</th>
+                        <th>Bitiş Saati</th>
+                        <th>Kontenjan</th>
+                        <th>Not</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td>{{ item.date|date:"d.m.Y" }}</td>
+                        <td>{{ item.start_time|time:"H:i" }}</td>
+                        <td>{{ item.end_time|time:"H:i" }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ item.quota }}</span>
+                        </td>
+                        <td>{{ item.note|default:"-" }}</td>
+                        <td>
+                            <button onclick="confirmAppointment({{ item.id }}, '{{ item.date|date:"d.m.Y" }}', '{{ item.start_time|time:"H:i" }}', '{{ item.end_time|time:"H:i" }}')" 
+                                    class="btn btn-success btn-sm">
+                                📅 Randevu Al
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        
+        <!-- Sayfalama -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Sayfa navigasyonu">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; İlk</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     </div>
-    {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-warning">Henüz uygunluk eklenmemiş.</div>
+<div class="alert alert-warning">
+    <h5>📭 Henüz uygunluk eklenmemiş</h5>
+    <p class="mb-0">Admin tarafından uygunluk eklendiğinde burada görünecektir.</p>
+</div>
 {% endif %}
+
+<script>
+function confirmAppointment(availabilityId, date, startTime, endTime) {
+    Swal.fire({
+        title: '📅 Randevu Al',
+        html: `
+            <div class="text-start">
+                <p><strong>Tarih:</strong> ${date}</p>
+                <p><strong>Saat:</strong> ${startTime} - ${endTime}</p>
+                <p class="text-muted">Bu randevuyu almak istediğinizden emin misiniz?</p>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Evet, Randevu Al',
+        cancelButtonText: 'İptal',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Loading göster
+            Swal.fire({
+                title: 'İşleniyor...',
+                text: 'Randevu alınıyor, lütfen bekleyin.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Randevu alma sayfasına yönlendir
+            window.location.href = `/appointments/book/${availabilityId}/`;
+        }
+    });
+}
+</script>
 {% endblock %}
