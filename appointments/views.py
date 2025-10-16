@@ -158,6 +158,22 @@ def create_availability(request):
             quota = request.POST.get('quota')
             note = request.POST.get('note')
 
+            # Zaman doğrulama: başlangıç < bitiş
+            if start_time >= end_time:
+                messages.error(request, "Başlangıç saati bitiş saatinden küçük olmalı.")
+                return redirect('create_availability')
+
+            # Çakışma kontrolü (aynı gün, kesişen saat aralığı)
+            overlap_exists = Availability.objects.filter(
+                date=date_str,
+                start_time__lt=end_time,
+                end_time__gt=start_time,
+            ).exists()
+
+            if overlap_exists:
+                messages.error(request, "Aynı gün ve saat aralığında çakışan bir uygunluk mevcut. Oluşturulmadı.")
+                return redirect('create_availability')
+
             Availability.objects.create(
                 admin=request.user,
                 date=date_str,
@@ -177,8 +193,24 @@ def create_availability(request):
             note = request.POST.get('note')
 
             today = date.today()
+            created_count = 0
+            skipped_conflict_count = 0
             for i in range(50):
                 day = today + timedelta(days=i)
+                # Zaman doğrulama
+                if start_time >= end_time:
+                    messages.error(request, "Başlangıç saati bitiş saatinden küçük olmalı.")
+                    return redirect('create_availability')
+
+                overlap_exists = Availability.objects.filter(
+                    date=day,
+                    start_time__lt=end_time,
+                    end_time__gt=start_time,
+                ).exists()
+                if overlap_exists:
+                    skipped_conflict_count += 1
+                    continue
+
                 Availability.objects.create(
                     admin=request.user,
                     date=day,
@@ -187,7 +219,12 @@ def create_availability(request):
                     quota=quota,
                     note=note
                 )
-            messages.success(request, "Önümüzdeki 50 gün için uygunluklar oluşturuldu ✅")
+                created_count += 1
+
+            if created_count:
+                messages.success(request, f"{created_count} gün için uygunluklar oluşturuldu ✅")
+            if skipped_conflict_count:
+                messages.warning(request, f"{skipped_conflict_count} gün çakışma nedeniyle atlandı.")
             return redirect('create_availability')
     return render(request, 'appointments/admin_create_availability.html')
 
