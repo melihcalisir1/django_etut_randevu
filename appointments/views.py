@@ -34,7 +34,28 @@ def admin_dashboard(request):
 
 # Uygunluk listesini göster
 def availability_list(request):
-    availabilities = Availability.objects.all().order_by('date', 'start_time')
+    # Start_time'a göre: şimdi+1 saat ile şimdi+20 saat arasında başlayan slotları göster
+    now = timezone.localtime()
+    window_start = now + timedelta(hours=1)
+    window_end = now + timedelta(hours=20)
+
+    # Tarih aralığına göre kaba filtre (performans) ardından Python tarafında kesin filtre
+    approx_qs = (
+        Availability.objects
+        .filter(date__range=[window_start.date(), window_end.date()])
+        .order_by('date', 'start_time')
+    )
+
+    filtered = []
+    for av in approx_qs:
+        av_start_dt = timezone.make_aware(
+            datetime.combine(av.date, av.start_time),
+            timezone.get_current_timezone()
+        )
+        if window_start <= av_start_dt <= window_end:
+            filtered.append(av)
+
+    availabilities = filtered
     
     # Sayfalama
     paginator = Paginator(availabilities, 10)
@@ -51,6 +72,21 @@ def book_appointment(request, availability_id):
     availability = get_object_or_404(Availability, id=availability_id)
     branches = Branch.objects.all()
     student = request.user
+
+    # Sadece start_time'ın 1-20 saat öncesi penceresinde randevuya izin ver
+    now = timezone.localtime()
+    window_start = now + timedelta(hours=1)
+    window_end = now + timedelta(hours=20)
+    availability_start_dt = timezone.make_aware(
+        datetime.combine(availability.date, availability.start_time),
+        timezone.get_current_timezone()
+    )
+    if not (window_start <= availability_start_dt <= window_end):
+        return render(request, 'appointments/book_appointment.html', {
+            'availability': availability,
+            'branches': branches,
+            'error_message': 'Bu zaman dilimi için randevuya şu an izin verilmiyor. (1-20 saat penceresi)'
+        })
 
     if request.method == 'POST':
 
@@ -131,7 +167,7 @@ def create_availability(request):
                 note=note
             )
             messages.success(request, "Tekil uygunluk başarıyla oluşturuldu ✅")
-            return redirect('admin_create_availability')
+            return redirect('create_availability')
 
         elif mode == 'bulk':
             # Toplu oluşturma (önümüzdeki 50 gün)
@@ -152,7 +188,7 @@ def create_availability(request):
                     note=note
                 )
             messages.success(request, "Önümüzdeki 50 gün için uygunluklar oluşturuldu ✅")
-            return redirect('admin_create_availability')
+            return redirect('create_availability')
     return render(request, 'appointments/admin_create_availability.html')
 
 @user_passes_test(is_admin)
